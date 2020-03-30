@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Input  from '../Login/Input';
 import './SignUp.scss'
+import { Joi } from 'joi-browser';
 
 class SignUp extends Component {
 
@@ -13,29 +14,32 @@ class SignUp extends Component {
         registration[e.currentTarget.name] = e.currentTarget.value;
         this.setState({registration});
 
-        let errors = this.state.formErrors;
-        let name = e.currentTarget.name;
-        let value = e.currentTarget.value;
-
-        switch(name) {
-            case 'firstName':
-                errors.firstName = value.length < 9
-                ? 'Required !'
-                : '';
-            break;
-
-            case 'lastName' : 
-                errors.lastName = value.length < 1
-                ? "Required !"
-                : '';
-            break;
-        
-        }
-
-        this.setState({errors, [name] : value} , () =>{
-            console.log(errors)
-        }) 
+        // let name = e.currentTarget.name;
+        // let value = e.currentTarget.value;
     }
+
+    handleSubmit = (e) => {
+        e.preventDefault();
+
+        const errors = this.validate();
+         this.setState({errors : errors || {} });
+
+    }
+
+    validate = () => {
+        var result = Joi.validate(this.state.registration, this.schema, {
+            abortEarly : false 
+        });
+
+        if(!result.error) return null; 
+        const errors = {};
+        for ( let item of result.error.details)
+            errors[item.path[0]] = item.message;
+
+            return errors;
+        
+    }
+
 
     state = {  
         registration : {
@@ -48,24 +52,25 @@ class SignUp extends Component {
             state:"",
             pin:"",
             password:"",
-            re_password:""
+            // re_password:""
         },
-
-        formErrors : {
-            firstName:"",
-            lastName:"",
-            mobile:"",
-            email:"",
-            address:"",
-            city:"",
-            state:"",
-            pin:"",
-            password:"",
-            re_password:""
-
-        }
+        errors : {}
+        
     }
 
+
+        schema = {
+            firstName : Joi.string().required().label("firstName"),
+            lastName : Joi.string().required().label("lastName"),
+            mobile: Joi.number().integer().min(9).max(11).required().label("Mobile") ,
+            email : Joi.string().email().required().label('Email'),
+            password : Joi.string().required().label('Password'),
+            address : Joi.stirng().min(10).max(30).required().label("Address"),
+            city : Joi.string().max(10).required().label("City"),
+            state : Joi.stirng().max(10).required().label("State"),
+            pin : Joi.numberic().min(5).max(7).required().label('Pin Code')
+
+        }
    
     render() { 
         return (  
@@ -80,6 +85,7 @@ class SignUp extends Component {
                             Label="First Name"
                             Type="text"
                             onChange={this.handleChange}
+                            error = {this.state.errors.firstName}
                         />
 
                         <Input
@@ -88,6 +94,7 @@ class SignUp extends Component {
                             Label="Last Name"
                             Type="text"
                             onChange={this.handleChange}
+                            error = {this.state.errors.lastName}
                         />
 
                         <Input
@@ -96,6 +103,7 @@ class SignUp extends Component {
                             Label="Mobile"
                             Type="number"
                             onChange={this.handleChange}
+                            error = {this.state.errors.mobile}
                         />  
 
                         <Input
@@ -104,6 +112,7 @@ class SignUp extends Component {
                             Label="Email"
                             Type="email"
                             onChange={this.handleChange}
+                            error = {this.state.errors.email}
                         />
 
                         <Input
@@ -112,15 +121,16 @@ class SignUp extends Component {
                             Label="Password"
                             Type="password"
                             onChange={this.handleChange}
+                            error = {this.state.errors.password}
                         />
 
-                        <Input
+                        {/* <Input
                             name="re_password"
                             value={this.state.registration.re_password}
                             Label="Confirm Password"
                             Type="password"
                             onChange={this.handleChange}
-                        />
+                        /> */}
 
                         <Input
                             name="address"
@@ -128,6 +138,7 @@ class SignUp extends Component {
                             Label="Address"
                             Type="text"
                             onChange={this.handleChange}
+                            error = {this.state.errors.address}
                         />
 
                         <Input
@@ -137,6 +148,7 @@ class SignUp extends Component {
                             Label="City"
                             Type="text"
                             onChange={this.handleChange}
+                            error = {this.state.errors.city}
                         />
 
                         <Input
@@ -145,6 +157,7 @@ class SignUp extends Component {
                             Label="State"
                             Type="text"
                             onChange={this.handleChange}
+                            error = {this.state.errors.state}
                         />
 
                         <Input
@@ -153,6 +166,7 @@ class SignUp extends Component {
                             Label="Pin Code"
                             Type="number"
                             onChange={this.handleChange}
+                            error = {this.state.errors.pin}
                         />
 
                         <br/>
